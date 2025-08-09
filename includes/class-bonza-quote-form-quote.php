@@ -534,4 +534,17 @@ class Bonza_Quote_Form_Quote {
 		);
 	}
 
+    /**
+	 * Get valid statuses
+	 *
+	 * @since    1.0.0
+	 * @return   array    Array of valid statuses
+	 */
+	public static function get_valid_statuses() {
+		return apply_filters(
+            'bonza_quote_valid_statuses',
+            self::$valid_statuses
+        );
+	}
+
 }
