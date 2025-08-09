@@ -139,4 +139,47 @@ class Bonza_Quote_Form_Activator {
 
 		return true;
 	}
+
+	/**
+	 * Get table statistics
+	 *
+	 * @since    1.0.0
+	 * @return   array Table statistics
+	 */
+	public static function get_table_stats() {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'bonza_quotes';
+		
+		$stats = array(
+			'total_quotes' => 0,
+			'pending_quotes' => 0,
+			'approved_quotes' => 0,
+			'rejected_quotes' => 0,
+			'table_exists' => false
+		);
+
+		if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) == $table_name) {
+			$stats['table_exists'] = true;
+			
+			$stats['total_quotes'] = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+			
+			$stats['pending_quotes'] = $wpdb->get_var($wpdb->prepare( 
+				"SELECT COUNT(*) FROM $table_name WHERE status = %s", 
+				'pending' 
+			));
+			
+			$stats['approved_quotes'] = $wpdb->get_var($wpdb->prepare( 
+				"SELECT COUNT(*) FROM $table_name WHERE status = %s", 
+				'approved' 
+			));
+			
+			$stats['rejected_quotes'] = $wpdb->get_var($wpdb->prepare( 
+				"SELECT COUNT(*) FROM $table_name WHERE status = %s", 
+				'rejected' 
+			));
+		}
+
+		return $stats;
+	}
 }
