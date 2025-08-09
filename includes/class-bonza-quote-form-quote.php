@@ -276,4 +276,112 @@ class Bonza_Quote_Form_Quote {
 
 		return $errors->has_errors() ? $errors : true;
 	}
+
+    /**
+	 * Get quote by ID
+	 *
+	 * @since    1.0.0
+	 * @param    int    $id    Quote ID
+	 * @return   Bonza_Quote_Form_Quote|null    Quote object or null if not found
+	 */
+	public static function get_by_id($id) {
+		global $wpdb;
+
+		if(!self::$table_name) {
+			self::$table_name = $wpdb->prefix . 'bonza_quotes';
+		}
+
+		$quote_data = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM " . self::$table_name . " WHERE id = %d",
+			$id
+		), ARRAY_A);
+
+		if(!$quote_data) {
+			return null;
+		}
+
+		return new self($quote_data);
+	}
+
+    /**
+	 * Get all quotes with pagination and filtering
+	 *
+	 * @since    1.0.0
+	 * @param    array    $args    Query arguments
+	 * @return   array             Array of quote objects and pagination info
+	 */
+	public static function get_all($args = array()) {
+		global $wpdb;
+
+		if(!self::$table_name) {
+			self::$table_name = $wpdb->prefix . 'bonza_quotes';
+		}
+
+		$defaults = array(
+			'per_page' => 20,
+			'page'     => 1,
+			'status'   => '',
+			'search'   => '',
+			'orderby'  => 'created_at',
+			'order'    => 'DESC',
+		);
+
+		$args = wp_parse_args($args, $defaults);
+
+		$where_conditions = array();
+		$where_values = array();
+
+		if(!empty($args['status']) && in_array($args['status'], self::$valid_statuses)) {
+			$where_conditions[] = 'status = %s';
+			$where_values[] = $args['status'];
+		}
+
+		if(!empty($args['search'])) {
+			$where_conditions[] = '(name LIKE %s OR email LIKE %s OR service_type LIKE %s)';
+			$search_term = '%' . $wpdb->esc_like($args['search']) . '%';
+			$where_values[] = $search_term;
+			$where_values[] = $search_term;
+			$where_values[] = $search_term;
+		}
+
+		$where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+
+		$allowed_orderby = array('id', 'name', 'email', 'service_type', 'status', 'created_at', 'updated_at');
+		$orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'created_at';
+		$order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+
+		$count_sql = "SELECT COUNT(*) FROM " . self::$table_name . " " . $where_clause;
+		$total_items = $wpdb->get_var(!empty($where_values) ? $wpdb->prepare($count_sql, $where_values) : $count_sql);
+
+		$total_pages = ceil($total_items / $args['per_page']);
+		$offset = ($args['page'] - 1) * $args['per_page'];
+
+		$sql = sprintf(
+			"SELECT * FROM %s %s ORDER BY %s %s LIMIT %d OFFSET %d",
+			self::$table_name,
+			$where_clause,
+			$orderby,
+			$order,
+			$args['per_page'],
+			$offset
+		);
+
+		$quotes_data = $wpdb->get_results( 
+			! empty( $where_values ) ? $wpdb->prepare( $sql, $where_values ) : $sql, 
+			ARRAY_A 
+		);
+
+		$quotes = array();
+
+		foreach($quotes_data as $quote_data) {
+			$quotes[] = new self($quote_data);
+		}
+
+		return array(
+			'quotes'      => $quotes,
+			'total_items' => $total_items,
+			'total_pages' => $total_pages,
+			'current_page' => $args['page'],
+		);
+	}
 }
