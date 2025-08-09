@@ -384,4 +384,62 @@ class Bonza_Quote_Form_Quote {
 			'current_page' => $args['page'],
 		);
 	}
+
+    /**
+	 * Update quote status
+	 *
+	 * @since    1.0.0
+	 * @param    int       $id        Quote ID
+	 * @param    string    $status    New status
+	 * @return   bool|WP_Error       True on success, WP_Error on failure
+	 */
+	public static function update_status($id, $status) {
+		global $wpdb;
+
+		if(!self::$table_name) {
+			self::$table_name = $wpdb->prefix . 'bonza_quotes';
+		}
+
+		if(!in_array($status, self::$valid_statuses)) {
+			return new WP_Error(
+                'invalid_status',
+                __('Invalid status provided.', 'bonza-quote-form')
+            );
+		}
+
+		$quote = self::get_by_id($id);
+
+		if(!$quote) {
+			return new WP_Error(
+                'quote_not_found',
+                __('Quote not found.', 'bonza-quote-form')
+            );
+		}
+
+		$old_status = $quote->status;
+
+		$result = $wpdb->update(
+			self::$table_name,
+			array('status' => $status),
+			array('id' => $id),
+			array('%s'),
+			array('%d')
+		);
+
+		if(false === $result) {
+			return new WP_Error(
+                'db_update_error',
+                __('Failed to update quote status.', 'bonza-quote-form')
+            );
+		}
+
+		do_action(
+            'bonza_quote_status_changed',
+            $id,
+            $status,
+            $old_status
+        );
+
+		return true;
+	}
 }
