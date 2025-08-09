@@ -100,4 +100,19 @@ class Bonza_Quote_Form_Public {
 
 	}
 
+	/**
+	 * Register shortcodes
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_shortcodes() {
+		add_shortcode(
+			'bonza_quote_form',
+			array(
+				$this,
+				'render_quote_form_shortcode'
+			)
+		);
+	}
+
 }
