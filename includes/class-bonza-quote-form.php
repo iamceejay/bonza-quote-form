@@ -122,6 +122,8 @@ class Bonza_Quote_Form {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-bonza-quote-form-public.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bonza-quote-form-quote.php';
+
 		$this->loader = new Bonza_Quote_Form_Loader();
 
 	}
