@@ -488,4 +488,31 @@ class Bonza_Quote_Form_Quote {
 		return true;
 	}
 
+    /**
+	 * Get quotes count by status
+	 *
+	 * @since    1.0.0
+	 * @return   array    Array of status counts
+	 */
+	public static function get_status_counts() {
+		global $wpdb;
+
+		if(!self::$table_name) {
+			self::$table_name = $wpdb->prefix . 'bonza_quotes';
+		}
+
+		$counts = array();
+		
+        foreach(self::$valid_statuses as $status) {
+			$counts[$status] = $wpdb->get_var($wpdb->prepare(
+				"SELECT COUNT(*) FROM " . self::$table_name . " WHERE status = %s",
+				$status
+			));
+		}
+
+		$counts['total'] = array_sum($counts);
+
+		return $counts;
+	}
+
 }
