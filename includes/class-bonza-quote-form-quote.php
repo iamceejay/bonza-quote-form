@@ -515,4 +515,23 @@ class Bonza_Quote_Form_Quote {
 		return $counts;
 	}
 
+    /**
+	 * Convert quote to array
+	 *
+	 * @since    1.0.0
+	 * @return   array    Quote data as array
+	 */
+	public function to_array() {
+		return array(
+			'id'           => $this->id,
+			'name'         => $this->name,
+			'email'        => $this->email,
+			'service_type' => $this->service_type,
+			'notes'        => $this->notes,
+			'status'       => $this->status,
+			'created_at'   => $this->created_at,
+			'updated_at'   => $this->updated_at,
+		);
+	}
+
 }
