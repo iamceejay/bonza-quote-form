@@ -442,4 +442,50 @@ class Bonza_Quote_Form_Quote {
 
 		return true;
 	}
+
+    /**
+	 * Delete quote
+	 *
+	 * @since    1.0.0
+	 * @param    int    $id    Quote ID
+	 * @return   bool|WP_Error    True on success, WP_Error on failure
+	 */
+	public static function delete($id) {
+		global $wpdb;
+
+		if(!self::$table_name) {
+			self::$table_name = $wpdb->prefix . 'bonza_quotes';
+		}
+
+		$quote = self::get_by_id($id);
+		
+        if(!$quote) {
+			return new WP_Error(
+                'quote_not_found',
+                __('Quote not found.', 'bonza-quote-form')
+            );
+		}
+
+		$result = $wpdb->delete(
+			self::$table_name,
+			array('id' => $id),
+			array('%d')
+		);
+
+		if(false === $result) {
+			return new WP_Error(
+                'db_delete_error',
+                __('Failed to delete quote.', 'bonza-quote-form')
+            );
+		}
+
+		do_action(
+            'bonza_quote_deleted',
+            $id,
+            $quote
+        );
+
+		return true;
+	}
+
 }
