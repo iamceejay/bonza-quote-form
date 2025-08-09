@@ -183,6 +183,14 @@ class Bonza_Quote_Form {
 	 * @since    1.0.0
 	 */
 	public function run() {
+		add_action(
+			'init',
+			array(
+				$plugin_public,
+				'register_shortcodes'
+			)
+		);
+
 		$this->loader->run();
 	}
 
