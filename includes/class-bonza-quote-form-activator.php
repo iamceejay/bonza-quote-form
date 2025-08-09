@@ -102,4 +102,41 @@ class Bonza_Quote_Form_Activator {
 			update_option('bonza_quote_form_db_version', '1.0.0');
 		}
 	}
+
+	/**
+	 * Validate table structure
+	 *
+	 * @since    1.0.0
+	 * @return   boolean True if table structure is valid, false otherwise
+	 */
+	public static function validate_table_structure() {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'bonza_quotes';
+		
+		$required_columns = array(
+			'id',
+			'name', 
+			'email',
+			'service_type',
+			'notes',
+			'status',
+			'created_at',
+			'updated_at'
+		);
+
+		$existing_columns = $wpdb->get_col($wpdb->prepare(
+			"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+			DB_NAME,
+			$table_name
+		));
+
+		foreach ($required_columns as $column) {
+			if (!in_array( $column, $existing_columns)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 }
