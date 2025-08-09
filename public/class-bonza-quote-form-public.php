@@ -115,4 +115,44 @@ class Bonza_Quote_Form_Public {
 		);
 	}
 
+	/**
+	 * Render the quote form shortcode
+	 *
+	 * @since    1.0.0
+	 * @param    array     $atts    Shortcode attributes
+	 * @param    string    $content Shortcode content
+	 * @return   string             Form HTML
+	 */
+	public function render_quote_form_shortcode($atts, $content = null) {
+		$attributes = shortcode_atts(array(
+			'title'          => __('Get a Quote', 'bonza-quote-form'),
+			'submit_text'    => __('Submit Quote Request', 'bonza-quote-form'),
+			'show_title'     => 'true',
+			'ajax'           => 'true',
+			'redirect_url'   => '',
+			'service_types'  => '',
+		), $atts);
+
+		$attributes = apply_filters(
+			'bonza_quote_form_shortcode_attributes',
+			$attributes
+		);
+
+		ob_start();
+
+		$this->render_quote_form($attributes);
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the quote form
+	 *
+	 * @since    1.0.0
+	 * @param    array    $attributes    Form attributes
+	 */
+	private function render_quote_form($attributes) {
+		include plugin_dir_path( __FILE__ ) . 'partials/bonza-quote-form-public-display.php';
+	}
+
 }
