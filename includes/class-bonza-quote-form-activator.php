@@ -24,6 +24,7 @@ class Bonza_Quote_Form_Activator {
 
 	public static function activate() {
 		self::create_quotes_table();
+		self::create_database_version();
 	}
 
 	/**
@@ -63,6 +64,42 @@ class Bonza_Quote_Form_Activator {
 			} else {
 				error_log('Bonza Quote Form: Failed to create database table.');
 			}
+		}
+	}
+
+	/**
+	 * Store database version for future upgrades
+	 *
+	 * @since    1.0.0
+	 */
+	private static function create_database_version() {
+		add_option('bonza_quote_form_db_version', '1.0.0');
+		
+		add_option('bonza_quote_form_activated_time', current_time('timestamp'));
+	}
+
+	/**
+	 * Check if database needs upgrade
+	 *
+	 * @since    1.0.0
+	 * @return   boolean True if upgrade needed, false otherwise
+	 */
+	public static function needs_database_upgrade() {
+		$current_version = get_option('bonza_quote_form_db_version', '0.0.0');
+		$plugin_version = '1.0.0';
+		
+		return version_compare($current_version, $plugin_version, '<');
+	}
+
+	/**
+	 * Upgrade database if needed
+	 *
+	 * @since    1.0.0
+	 */
+	public static function maybe_upgrade_database() {
+		if (self::needs_database_upgrade()) {
+			self::create_quotes_table();
+			update_option('bonza_quote_form_db_version', '1.0.0');
 		}
 	}
 }
