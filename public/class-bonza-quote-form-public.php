@@ -97,7 +97,6 @@ class Bonza_Quote_Form_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/bonza-quote-form-public.js', array( 'jquery' ), $this->version, false );
-
 	}
 
 	/**
@@ -152,7 +151,156 @@ class Bonza_Quote_Form_Public {
 	 * @param    array    $attributes    Form attributes
 	 */
 	private function render_quote_form($attributes) {
-		include plugin_dir_path( __FILE__ ) . 'partials/bonza-quote-form-public-display.php';
+		$service_types = $this->parse_service_types($attributes['service_types']);
+		
+		$form_id = 'bonza-quote-form-' . uniqid();
+		$form_submitted = false;
+		$form_message = '';
+		$form_errors = array();
+		
+		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['bonza_quote_submit'])) {
+			$result = $this->handle_form_submission();
+
+			if(is_wp_error($result)) {
+				$form_errors = $result->get_error_messages();
+			} else {
+				$form_submitted = true;
+				$form_message = __('Thank you! Your quote request has been submitted successfully.', 'bonza-quote-form');
+			}
+		}
+
+		/**
+		 * Filter to modify variables before template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Variables to pass to template
+		 */
+		$template_vars = apply_filters(
+			'bonza_quote_form_template_vars',
+			array(
+				'attributes'     => $attributes,
+				'service_types'  => $service_types,
+				'form_id'        => $form_id,
+				'form_submitted' => $form_submitted,
+				'form_message'   => $form_message,
+				'form_errors'    => $form_errors,
+			)
+		);
+
+		extract($template_vars);
+
+		/**
+		 * Action hook before form template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Template variables
+		 */
+		do_action(
+			'bonza_quote_form_before_template',
+			$template_vars
+		);
+
+		include plugin_dir_path(__FILE__) . 'partials/bonza-quote-form-public-display.php';
+
+		/**
+		 * Action hook after form template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Template variables
+		 */
+		do_action(
+			'bonza_quote_form_after_template',
+			$template_vars
+		);
 	}
 
+	/**
+	 * Parse service types from shortcode attribute
+	 *
+	 * @since    1.0.0
+	 * @param    string    $service_types_string    Comma-separated service types
+	 * @return   array                              Array of service types
+	 */
+	private function parse_service_types($service_types_string) {
+		if(empty($service_types_string)) {
+			return array();
+		}
+
+		$service_types = explode(',', $service_types_string);
+		$service_types = array_map('trim', $service_types);
+		$service_types = array_filter($service_types);
+
+		return apply_filters(
+			'bonza_quote_form_service_types',
+			$service_types
+		);
+	}
+
+	/**
+	 * Handle AJAX form submission
+	 *
+	 * @since    1.0.0
+	 */
+	public function handle_ajax_quote_submission() {
+		if(!wp_verify_nonce($_POST['bonza_quote_nonce'], 'bonza_quote_form_nonce')) {
+			wp_send_json_error(array(
+				'message' => __('Security check failed. Please refresh the page and try again.', 'bonza-quote-form')
+			));
+		}
+
+		$result = $this->handle_form_submission();
+
+		if(is_wp_error($result)) {
+			wp_send_json_error(array(
+				'message' => __('Please correct the following errors:', 'bonza-quote-form'),
+				'errors'  => $result->get_error_messages()
+			));
+		} else {
+			$response = array(
+				'message' => __('Thank you! Your quote request has been submitted successfully.', 'bonza-quote-form'),
+				'quote_id' => $result
+			);
+
+			if (!empty($_POST['bonza_quote_redirect'])) {
+				$response['redirect'] = esc_url_raw($_POST['bonza_quote_redirect']);
+			}
+
+			wp_send_json_success($response);
+		}
+	}
+
+	/**
+	 * Handle form submission (both AJAX and regular)
+	 *
+	 * @since    1.0.0
+	 * @return   int|WP_Error    Quote ID on success, WP_Error on failure
+	 */
+	private function handle_form_submission() {
+		$quote_data = array(
+			'name'         => sanitize_text_field($_POST['bonza_quote_name']),
+			'email'        => sanitize_email($_POST['bonza_quote_email']),
+			'service_type' => sanitize_text_field($_POST['bonza_quote_service_type']),
+			'notes'        => sanitize_textarea_field($_POST['bonza_quote_notes']),
+			'status'       => 'pending'
+		);
+
+		$quote_data = apply_filters(
+			'bonza_quote_form_submission_data',
+			$quote_data
+		);
+
+		$quote = new Bonza_Quote_Form_Quote($quote_data);
+		
+		$result = $quote->save();
+
+		if(!is_wp_error($result)) {
+			do_action(
+				'bonza_quote_form_submitted',
+				$result,
+				$quote
+			);
+		}
+
+		return $result;
+	}
 }
