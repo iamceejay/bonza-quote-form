@@ -430,4 +430,13 @@ class Bonza_Quote_Form_List_Table extends WP_List_Table {
 		</div>
 		<?php
 	}
+
+    /**
+	 * Display message when no items found
+	 *
+	 * @since    1.0.0
+	 */
+	public function no_items() {
+		esc_html_e('No quotes found.', 'bonza-quote-form');
+	}
 }
