@@ -1,4 +1,303 @@
-/**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
- */
+.bonza-quote-stats-container {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.bonza-quote-stat-card {
+    background: #0073aa;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 120px;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bonza-quote-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bonza-quote-stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+}
+
+.bonza-quote-stat-card p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.bonza-quote-details-container {
+    margin-top: 20px;
+}
+
+.bonza-quote-details-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bonza-quote-details-card h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #23282d;
+}
+
+.bonza-quote-details-card h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #23282d;
+}
+
+.bonza-quote-details-card .form-table th {
+    font-weight: 600;
+    color: #23282d;
+    padding: 15px 10px 15px 0;
+    width: 150px;
+}
+
+.bonza-quote-details-card .form-table td {
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.bonza-quote-details-card .form-table tr:last-child td {
+    border-bottom: none;
+}
+
+.bonza-quote-notes {
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.bonza-quote-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.bonza-quote-actions .button {
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.bonza-quote-details-card select {
+    padding: 5px 8px;
+    border: 1px solid #7e8993;
+    border-radius: 3px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.bonza-dashboard-widget {
+    font-size: 13px;
+}
+
+.bonza-quote-summary {
+    background: #f7f7f7;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.bonza-quote-summary p {
+    margin: 5px 0;
+}
+
+.bonza-dashboard-widget h4 {
+    margin: 15px 0 10px 0;
+    font-size: 14px;
+    color: #23282d;
+}
+
+.bonza-dashboard-widget ul {
+    margin: 0;
+    padding: 0;
+}
+
+.bonza-dashboard-widget li {
+    list-style: none;
+    margin: 8px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bonza-dashboard-widget li:last-child {
+    border-bottom: none;
+}
+
+.bonza-dashboard-widget .quote-date {
+    color: #666;
+    font-size: 12px;
+}
+
+.wp-list-table .column-status {
+    width: 100px;
+}
+
+.wp-list-table .column-created_at {
+    width: 140px;
+}
+
+.wp-list-table .column-notes {
+    width: 200px;
+}
+
+.wp-list-table .column-notes {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tablenav .alignleft.actions select {
+    margin-right: 5px;
+}
+
+.row-actions {
+    color: #ddd;
+}
+
+.row-actions span {
+    margin: 0;
+}
+
+.row-actions .approve a {
+    color: #00a32a;
+}
+
+.row-actions .approve a:hover {
+    color: #008a20;
+}
+
+.row-actions .reject a {
+    color: #d63638;
+}
+
+.row-actions .reject a:hover {
+    color: #b32d2e;
+}
+
+@media screen and (max-width: 1200px) {
+    .bonza-quote-stats-container {
+        gap: 15px;
+    }
+
+    .bonza-quote-stat-card {
+        min-width: 100px;
+    }
+
+    .bonza-quote-stat-card h3 {
+        font-size: 28px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .bonza-quote-stats-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bonza-quote-stat-card {
+        min-width: auto;
+    }
+
+    .bonza-quote-details-card {
+        padding: 15px;
+    }
+
+    .bonza-quote-details-card .form-table th {
+        width: 100px;
+        font-size: 13px;
+    }
+
+    .bonza-quote-actions .button {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .bonza-quote-stat-card h3 {
+        font-size: 24px;
+    }
+
+    .bonza-quote-stat-card p {
+        font-size: 12px;
+    }
+
+    .wp-list-table .column-notes {
+        display: none;
+    }
+
+    .wp-list-table .column-service_type {
+        display: none;
+    }
+}
+
+.notice.bonza-quote-notice {
+    border-left-width: 4px;
+}
+
+.notice.bonza-quote-notice.notice-success {
+    border-left-color: #00a32a;
+}
+
+.notice.bonza-quote-notice.notice-error {
+    border-left-color: #d63638;
+}
+
+.bonza-admin-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.bonza-admin-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #0073aa;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: bonza-spin 1s linear infinite;
+}
+
+@keyframes bonza-spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}

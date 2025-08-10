@@ -186,7 +186,9 @@ class Bonza_Quote_Form {
 	 */
 	public function run() {
 		$plugin_public = new Bonza_Quote_Form_Public($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new Bonza_Quote_Form_Admin($this->get_plugin_name(), $this->get_version());
 
+		// Public
 		add_action(
 			'wp_enqueue_scripts',
 			array(
@@ -208,6 +210,23 @@ class Bonza_Quote_Form {
 			array(
 				$plugin_public,
 				'register_ajax_handlers'
+			)
+		);
+		
+		// Admin
+		add_action(
+			'admin_menu',
+			array(
+				$plugin_admin,
+				'add_admin_menu'
+			)
+		);
+
+		add_action(
+			'wp_dashboard_setup',
+			array(
+				$plugin_admin,
+				'add_dashboard_widget'
 			)
 		);
 
