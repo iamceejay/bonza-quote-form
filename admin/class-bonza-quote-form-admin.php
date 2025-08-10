@@ -527,28 +527,6 @@ class Bonza_Quote_Form_Admin {
 	}
 
 	/**
-	 * Set action notice based on result
-	 *
-	 * @since    1.0.0
-	 * @param    mixed     $result     Action result
-	 * @param    string    $success_message    Success message
-	 */
-	private function set_action_notice( $result, $success_message ) {
-		if ( ! is_wp_error( $result ) && $result !== false ) {
-			set_transient( 'bonza_quote_admin_notice', array( 
-				'type' => 'success', 
-				'message' => $success_message 
-			), 30 );
-		} else {
-			$error_message = is_wp_error( $result ) ? $result->get_error_message() : __( 'Action failed.', 'bonza-quote-form' );
-			set_transient( 'bonza_quote_admin_notice', array( 
-				'type' => 'error', 
-				'message' => $error_message 
-			), 30 );
-		}
-	}
-
-	/**
 	 * Display admin notices
 	 *
 	 * @since    1.0.0
