@@ -97,6 +97,22 @@ class Bonza_Quote_Form_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/bonza-quote-form-public.js', array( 'jquery' ), $this->version, false );
+
+		wp_localize_script(
+			$this->plugin_name,
+			'bonza_quote_ajax',
+			array(
+				'ajax_url' => admin_url('admin-ajax.php'),
+				'nonce'    => wp_create_nonce('bonza_quote_form_nonce'),
+				'messages' => array(
+					'success'       => __('Thank you! Your quote request has been submitted successfully.', 'bonza-quote-form'),
+					'error'         => __('Sorry, there was an error submitting your request. Please try again.', 'bonza-quote-form'),
+					'validation'    => __('Please check the form for errors and try again.', 'bonza-quote-form'),
+					'processing'    => __('Processing...', 'bonza-quote-form'),
+					'submit'        => __('Submit Quote Request', 'bonza-quote-form')
+				)
+			)
+		);
 	}
 
 	/**
