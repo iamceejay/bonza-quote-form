@@ -113,6 +113,100 @@ class Bonza_Quote_Form_Admin {
 		);
 	}
 
+	public function init_admin_hooks() {
+		add_action(
+			'admin_init',
+			array(
+				$this,
+				'handle_quote_actions_early'
+			)
+		);
+	}
+
+	public function handle_quote_actions_early() {
+		if(!isset($_GET['page']) || $_GET['page'] !== 'bonza-quotes') {
+			return;
+		}
+
+		if(!isset($_GET['action']) || !isset($_GET['quote']) || !isset($_GET['_wpnonce'])) {
+			return;
+		}
+	
+		$action = sanitize_text_field($_GET['action']);
+		$quote_id = intval($_GET['quote']);
+		$nonce = sanitize_text_field($_GET['_wpnonce']);
+
+		if($action === 'view') {
+			return;
+		}
+
+		if(!current_user_can('manage_options')) {
+			wp_die(__('You do not have permission to perform this action.', 'bonza-quote-form'));
+		}
+	
+		switch ($action) {
+			case 'approve':
+				if(wp_verify_nonce($nonce, 'approve_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'approved');
+					
+					if(!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote approved successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+					
+					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
+					
+					exit;
+				}
+				break;
+	
+			case 'reject':
+				if(wp_verify_nonce($nonce, 'reject_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'rejected');
+
+					if (!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote rejected successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+
+					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
+
+					exit;
+				}
+				break;
+	
+			case 'delete':
+				if(wp_verify_nonce($nonce, 'delete_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::delete($quote_id);
+
+					if (!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote deleted successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+
+					wp_redirect( admin_url('admin.php?page=bonza-quotes'));
+
+					exit;
+				}
+				break;
+		}
+	}
+
 	/**
 	 * Add admin menu items
 	 *
@@ -142,15 +236,13 @@ class Bonza_Quote_Form_Admin {
 		if (!current_user_can('manage_options')) {
 			wp_die(__('You do not have sufficient permissions to access this page.', 'bonza-quote-form'));
 		}
-
-		$this->handle_single_quote_actions();
-
+	
 		require_once plugin_dir_path(__FILE__) . 'class-bonza-quote-form-list-table.php';
 		
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : '';
-
+	
 		if($action === 'view' && isset($_GET['quote'])) {
-			$this->display_quote_details(intval($_GET['quote']));
+			$this->display_quote_details( intval($_GET['quote']));
 		} else {
 			$this->display_quotes_list();
 		}
@@ -354,78 +446,82 @@ class Bonza_Quote_Form_Admin {
 	 * @since    1.0.0
 	 */
 	private function handle_single_quote_actions() {
-		if(!isset($_GET['action']) || !isset($_GET['quote'])) {
+		if(!isset($_GET['action']) || ! isset($_GET['quote'])) {
 			return;
 		}
-
+	
 		$action = sanitize_text_field($_GET['action']);
 		$quote_id = intval($_GET['quote']);
-
-		if(isset($_POST['action']) && $_POST['action'] === 'update_status' && isset($_POST['quote_id'])) {
-			if(!wp_verify_nonce($_POST['_wpnonce'], 'update_quote_status_' . intval($_POST['quote_id']))) {
-				wp_die(__('Security check failed.', 'bonza-quote-form'));
-			}
-
-			$quote_id = intval($_POST['quote_id']);
-			$new_status = sanitize_text_field($_POST['quote_status']);
-			$result = Bonza_Quote_Form_Quote::update_status($quote_id, $new_status);
-			
-			if (!is_wp_error($result)) {
-				set_transient(
-					'bonza_quote_admin_notice',
-					array( 
-						'type' => 'success', 
-						'message' => __('Quote status updated successfully.', 'bonza-quote-form')
-					),
-				30);
-			} else {
-				set_transient(
-					'bonza_quote_admin_notice',
-					array( 
-						'type' => 'error', 
-						'message' => $result->get_error_message() 
-					),
-				30);
-			}
-
-			wp_redirect(remove_query_arg(array('action', '_wpnonce')));
-
-			exit;
+	
+		if($action === 'view' || !isset($_GET['_wpnonce'])) {
+			return;
 		}
-
+	
+		if(!current_user_can('manage_options')) {
+			wp_die(__('You do not have permission to perform this action.', 'bonza-quote-form'));
+		}
+	
+		$nonce = sanitize_text_field($_GET['_wpnonce']);
+		
 		switch ($action) {
 			case 'approve':
-				if(!wp_verify_nonce($_GET['_wpnonce'], 'approve_quote_' . $quote_id)) {
-					wp_die(__('Security check failed.', 'bonza-quote-form'));
+				if(wp_verify_nonce($nonce, 'approve_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'approved');
+
+					if (!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote approved successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+
+					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
+					
+					exit();
 				}
-
-				$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'approved');
-
-				$this->set_action_notice($result, __('Quote approved successfully.', 'bonza-quote-form'));
-
 				break;
+			
 			case 'reject':
-				if(!wp_verify_nonce($_GET['_wpnonce'], 'reject_quote_' . $quote_id)) {
-					wp_die(__('Security check failed.', 'bonza-quote-form'));
+				if(wp_verify_nonce($nonce, 'reject_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'rejected');
+
+					if (!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote rejected successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+
+					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
+
+					exit();
 				}
-
-				$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'rejected');
-
-				$this->set_action_notice($result, __('Quote rejected successfully.', 'bonza-quote-form'));
-
 				break;
+			
 			case 'delete':
-				if (!wp_verify_nonce($_GET['_wpnonce'], 'delete_quote_' . $quote_id)) {
-					wp_die(__('Security check failed.', 'bonza-quote-form'));
+				if(wp_verify_nonce($nonce, 'delete_quote_' . $quote_id)) {
+					$result = Bonza_Quote_Form_Quote::delete($quote_id);
+
+					if(!is_wp_error($result)) {
+						set_transient(
+							'bonza_quote_admin_notice',
+							array(
+								'type' => 'success',
+								'message' => __('Quote deleted successfully.', 'bonza-quote-form')
+							),
+						30);
+					}
+
+					wp_redirect(admin_url('admin.php?page=bonza-quotes'));
+
+					exit();
 				}
-
-				$result = Bonza_Quote_Form_Quote::delete($quote_id);
-				$this->set_action_notice($result, __('Quote deleted successfully.', 'bonza-quote-form'));
-				
-				wp_redirect(admin_url('admin.php?page=bonza-quotes'));
-
-				exit;
-
 				break;
 		}
 	}

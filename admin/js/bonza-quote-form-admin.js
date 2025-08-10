@@ -288,6 +288,26 @@
         },
     };
 
+    $(document).on(
+        "click",
+        'a[href*="action=approve"], a[href*="action=reject"], a[href*="action=delete"]',
+        function (e) {
+            var href = $(this).attr("href");
+            var confirmMessage = "";
+
+            if (href.indexOf("action=approve") !== -1) {
+                confirmMessage = "Are you sure you want to approve this quote?";
+            } else if (href.indexOf("action=reject") !== -1) {
+                confirmMessage = "Are you sure you want to reject this quote?";
+            }
+
+            if (confirmMessage && !confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    );
+
     $(document).ready(function () {
         BonzaQuoteAdmin.init();
     });
