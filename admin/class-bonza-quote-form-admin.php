@@ -233,16 +233,16 @@ class Bonza_Quote_Form_Admin {
 	 * @since    1.0.0
 	 */
 	public function display_quotes_page() {
-		if (!current_user_can('manage_options')) {
+		if(!current_user_can( 'manage_options')) {
 			wp_die(__('You do not have sufficient permissions to access this page.', 'bonza-quote-form'));
 		}
-	
+
 		require_once plugin_dir_path(__FILE__) . 'class-bonza-quote-form-list-table.php';
 		
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : '';
-	
-		if($action === 'view' && isset($_GET['quote'])) {
-			$this->display_quote_details( intval($_GET['quote']));
+
+		if ($action === 'view' && isset($_GET['quote'])) {
+			$this->display_quote_details(intval($_GET['quote']));
 		} else {
 			$this->display_quotes_list();
 		}
@@ -303,227 +303,72 @@ class Bonza_Quote_Form_Admin {
 	private function display_quote_details($quote_id) {
 		$quote = Bonza_Quote_Form_Quote::get_by_id($quote_id);
 		
-		if(!$quote) {
+		if (!$quote) {
 			echo '<div class="wrap"><h1>' . __('Quote Not Found', 'bonza-quote-form') . '</h1>';
 			echo '<p>' . __('The requested quote could not be found.', 'bonza-quote-form') . '</p></div>';
 
 			return;
 		}
 
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e('Quote Details', 'bonza-quote-form'); ?></h1>
-			
-			<a href="<?php echo esc_url(admin_url('admin.php?page=bonza-quotes')); ?>" class="page-title-action">
-				<?php esc_html_e('← Back to Quotes', 'bonza-quote-form'); ?>
-			</a>
+		$status_labels = array(
+			'pending'  => array(
+				'label' => __('Pending', 'bonza-quote-form'),
+				'color' => '#f0ad4e'
+			),
+			'approved' => array(
+				'label' => __('Approved', 'bonza-quote-form'),
+				'color' => '#5cb85c'
+			),
+			'rejected' => array(
+				'label' => __('Rejected', 'bonza-quote-form'),
+				'color' => '#d9534f'
+			),
+		);
 
-			<?php $this->display_admin_notices(); ?>
+		/**
+		 * Filter to modify status labels and colors
+		 *
+		 * @since 1.0.0
+		 * @param array $status_labels Status labels array
+		 * @param object $quote Quote object
+		 */
+		$status_labels = apply_filters('bonza_quote_form_admin_status_labels', $status_labels, $quote);
 
-			<div class="bonza-quote-details-container">
-				<div class="bonza-quote-details-card">
-					<h2><?php esc_html_e('Quote Information', 'bonza-quote-form'); ?></h2>
-					
-					<table class="form-table">
-						<tr>
-							<th scope="row"><?php esc_html_e('ID', 'bonza-quote-form'); ?></th>
-							<td><?php echo esc_html($quote->id); ?></td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Name', 'bonza-quote-form'); ?></th>
-							<td><?php echo esc_html($quote->name); ?></td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Email', 'bonza-quote-form'); ?></th>
-							<td><a href="mailto:<?php echo esc_attr($quote->email); ?>"><?php echo esc_html($quote->email); ?></a></td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Service Type', 'bonza-quote-form'); ?></th>
-							<td><?php echo esc_html($quote->service_type); ?></td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Status', 'bonza-quote-form'); ?></th>
-							<td>
-								<form method="post" style="display: inline;">
-									<?php wp_nonce_field('update_quote_status_' . $quote->id, '_wpnonce'); ?>
-									<select name="quote_status" onchange="this.form.submit()">
-										<option value="pending" <?php selected($quote->status, 'pending'); ?>><?php esc_html_e( 'Pending', 'bonza-quote-form' ); ?></option>
-										<option value="approved" <?php selected($quote->status, 'approved'); ?>><?php esc_html_e( 'Approved', 'bonza-quote-form' ); ?></option>
-										<option value="rejected" <?php selected($quote->status, 'rejected'); ?>><?php esc_html_e( 'Rejected', 'bonza-quote-form' ); ?></option>
-									</select>
-									<input type="hidden" name="action" value="update_status">
-									<input type="hidden" name="quote_id" value="<?php echo esc_attr($quote->id); ?>">
-								</form>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Date Submitted', 'bonza-quote-form'); ?></th>
-							<td>
-								<?php
-									echo esc_html(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $quote->created_at));
-								?>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><?php esc_html_e('Last Updated', 'bonza-quote-form'); ?></th>
-							<td>
-								<?php 
-									echo esc_html(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $quote->updated_at));
-								?>
-							</td>
-						</tr>
-					</table>
+		/**
+		 * Filter to modify variables before template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Variables to pass to template
+		 */
+		$template_vars = apply_filters(
+			'bonza_quote_form_admin_details_template_vars',
+			array(
+				'quote'         => $quote,
+				'status_labels' => $status_labels,
+			)
+		);
 
-					<?php if(!empty($quote->notes)) : ?>
-						<h3><?php esc_html_e('Additional Notes', 'bonza-quote-form'); ?></h3>
-						<div class="bonza-quote-notes">
-							<?php echo wp_kses_post(nl2br(esc_html($quote->notes))); ?>
-						</div>
-					<?php endif; ?>
+		extract($template_vars);
 
-					<div class="bonza-quote-actions">
-						<h3><?php esc_html_e('Actions', 'bonza-quote-form'); ?></h3>
-						
-						<?php if($quote->status !== 'approved') : ?>
-							<a href="<?php echo esc_url(
-									wp_nonce_url(
-										add_query_arg(
-											array(
-												'action' => 'approve',
-												'quote' => $quote->id
-											)
-										),
-										'approve_quote_' . $quote->id
-									)
-								); ?>" 
-							   class="button button-primary">
-								<?php esc_html_e('Approve Quote', 'bonza-quote-form'); ?>
-							</a>
-						<?php endif; ?>
+		/**
+		 * Action hook before template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Template variables
+		 */
+		do_action('bonza_quote_form_admin_details_before_template', $template_vars);
 
-						<?php if($quote->status !== 'rejected') : ?>
-							<a href="<?php echo esc_url(
-									wp_nonce_url(
-										add_query_arg(
-											array(
-												'action' => 'reject',
-												'quote' => $quote->id
-											)
-										),
-									'reject_quote_' . $quote->id
-									)
-								); ?>" 
-							   class="button">
-								<?php esc_html_e('Reject Quote', 'bonza-quote-form'); ?>
-							</a>
-						<?php endif; ?>
+		$this->display_admin_notices();
 
-						<a href="<?php echo esc_url(
-									wp_nonce_url(
-										add_query_arg(
-											array(
-												'action' => 'delete',
-												'quote' => $quote->id
-											)
-										),
-										'delete_quote_' . $quote->id
-									)
-								); ?>" 
-						   class="button button-link-delete" 
-						   onclick="return confirm('<?php echo esc_js(__( 'Are you sure you want to delete this quote?', 'bonza-quote-form')); ?>')">
-							<?php esc_html_e('Delete Quote', 'bonza-quote-form'); ?>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
+		include plugin_dir_path(__FILE__) . 'partials/bonza-quote-form-admin-display.php';
 
-	/**
-	 * Handle single quote actions
-	 *
-	 * @since    1.0.0
-	 */
-	private function handle_single_quote_actions() {
-		if(!isset($_GET['action']) || ! isset($_GET['quote'])) {
-			return;
-		}
-	
-		$action = sanitize_text_field($_GET['action']);
-		$quote_id = intval($_GET['quote']);
-	
-		if($action === 'view' || !isset($_GET['_wpnonce'])) {
-			return;
-		}
-	
-		if(!current_user_can('manage_options')) {
-			wp_die(__('You do not have permission to perform this action.', 'bonza-quote-form'));
-		}
-	
-		$nonce = sanitize_text_field($_GET['_wpnonce']);
-		
-		switch ($action) {
-			case 'approve':
-				if(wp_verify_nonce($nonce, 'approve_quote_' . $quote_id)) {
-					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'approved');
-
-					if (!is_wp_error($result)) {
-						set_transient(
-							'bonza_quote_admin_notice',
-							array(
-								'type' => 'success',
-								'message' => __('Quote approved successfully.', 'bonza-quote-form')
-							),
-						30);
-					}
-
-					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
-					
-					exit();
-				}
-				break;
-			
-			case 'reject':
-				if(wp_verify_nonce($nonce, 'reject_quote_' . $quote_id)) {
-					$result = Bonza_Quote_Form_Quote::update_status($quote_id, 'rejected');
-
-					if (!is_wp_error($result)) {
-						set_transient(
-							'bonza_quote_admin_notice',
-							array(
-								'type' => 'success',
-								'message' => __('Quote rejected successfully.', 'bonza-quote-form')
-							),
-						30);
-					}
-
-					wp_redirect(admin_url('admin.php?page=bonza-quotes&action=view&quote=' . $quote_id));
-
-					exit();
-				}
-				break;
-			
-			case 'delete':
-				if(wp_verify_nonce($nonce, 'delete_quote_' . $quote_id)) {
-					$result = Bonza_Quote_Form_Quote::delete($quote_id);
-
-					if(!is_wp_error($result)) {
-						set_transient(
-							'bonza_quote_admin_notice',
-							array(
-								'type' => 'success',
-								'message' => __('Quote deleted successfully.', 'bonza-quote-form')
-							),
-						30);
-					}
-
-					wp_redirect(admin_url('admin.php?page=bonza-quotes'));
-
-					exit();
-				}
-				break;
-		}
+		/**
+		 * Action hook after template inclusion
+		 *
+		 * @since 1.0.0
+		 * @param array $template_vars Template variables
+		 */
+		do_action('bonza_quote_form_admin_details_after_template', $template_vars);
 	}
 
 	/**
