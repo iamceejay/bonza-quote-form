@@ -342,4 +342,18 @@ class Bonza_Quote_Form_Public {
 			)
 		);
 	}
+
+	/**
+	 * Conditionally enqueue scripts only when shortcode is present
+	 *
+	 * @since    1.0.0
+	 */
+	public function maybe_enqueue_scripts() {
+		global $post;
+		
+		if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'bonza_quote_form')) {
+			$this->enqueue_styles();
+			$this->enqueue_scripts();
+		}
+	}
 }

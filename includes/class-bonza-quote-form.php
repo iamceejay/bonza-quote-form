@@ -186,6 +186,14 @@ class Bonza_Quote_Form {
 		$plugin_public = new Bonza_Quote_Form_Public($this->get_plugin_name(), $this->get_version());
 
 		add_action(
+			'wp_enqueue_scripts',
+			array(
+				$plugin_public,
+				'maybe_enqueue_scripts'
+			)
+		);
+
+		add_action(
 			'init',
 			array(
 				$plugin_public,
