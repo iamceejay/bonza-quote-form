@@ -303,4 +303,27 @@ class Bonza_Quote_Form_Public {
 
 		return $result;
 	}
+
+	/**
+	 * Register AJAX handlers
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_ajax_handlers() {
+		add_action(
+			'wp_ajax_bonza_quote_submit',
+			array(
+				$this,
+				'handle_ajax_quote_submission'
+			)
+		);
+
+		add_action(
+			'wp_ajax_nopriv_bonza_quote_submit',
+			array(
+				$this,
+				'handle_ajax_quote_submission'
+			)
+		);
+	}
 }

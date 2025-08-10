@@ -183,11 +183,21 @@ class Bonza_Quote_Form {
 	 * @since    1.0.0
 	 */
 	public function run() {
+		$plugin_public = new Bonza_Quote_Form_Public($this->get_plugin_name(), $this->get_version());
+
 		add_action(
 			'init',
 			array(
 				$plugin_public,
 				'register_shortcodes'
+			)
+		);
+
+		add_action(
+			'init',
+			array(
+				$plugin_public,
+				'register_ajax_handlers'
 			)
 		);
 
