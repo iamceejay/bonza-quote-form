@@ -1,114 +1,106 @@
-=== Plugin Name ===
-Contributors: (this should be a list of wordpress.org userid's)
-Donate link: https://github.com/iamceejay/
-Tags: comments, spam
-Requires at least: 3.0.1
-Tested up to: 3.4
-Stable tag: 4.3
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+# Bonza Quote Form
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+A WordPress plugin that adds a quote request form to your website with admin management.
 
-== Description ==
+## What it does
 
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
+* Adds a quote form to any page or post using shortcode
+* Stores quote requests in the database
+* Provides admin interface to manage quotes (approve, reject, delete)
+* Includes email validation and required field checking
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+## How to use
 
-A few notes about the sections above:
+Add this shortcode to any page or post:
 
-*   "Contributors" is a comma separated list of wp.org/wp-plugins.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
-*   "Requires at least" is the lowest version that the plugin will work on
-*   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
-higher versions... this is just the highest one you've verified.
-*   Stable tag should indicate the Subversion "tag" of the latest stable version, or "trunk," if you use `/trunk/` for
-stable.
+```
+[bonza_quote_form]
+```
 
-    Note that the `readme.txt` of the stable tag is the one that is considered the defining one for the plugin, so
-if the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used
-for displaying information about the plugin.  In this situation, the only thing considered from the trunk `readme.txt`
-is the stable tag pointer.  Thus, if you develop in trunk, you can update the trunk `readme.txt` to reflect changes in
-your in-development version, without having that information incorrectly disclosed about the current stable version
-that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
+### Shortcode options
 
-    If no stable tag is provided, it is assumed that trunk is stable, but you should specify "trunk" if that's where
-you put the stable version, in order to eliminate any doubt.
+```
+[bonza_quote_form title="Get Your Quote" service_types="Web Design,SEO,Marketing"]
+```
 
-== Installation ==
+Available options:
+* `title` - Custom form title
+* `service_types` - Comma separated list for dropdown
+* `submit_text` - Custom submit button text
+* `ajax` - Enable/disable AJAX (default: true)
 
-This section describes how to install the plugin and get it working.
+## Setup instructions
 
-e.g.
+1. Upload plugin to `wp-content/plugins/bonza-quote-form/`
+2. Activate the plugin in WordPress admin
+3. Database table is created automatically
+4. Use the shortcode where you want the form
+5. Manage quotes in admin under "Bonza Quotes" menu
 
-1. Upload `bonza-quote-form.php` to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
+## Admin features
 
-== Frequently Asked Questions ==
+Navigate to **Bonza Quotes** in WordPress admin to:
+* View all quote submissions
+* Filter by status (pending, approved, rejected)
+* Change quote status with action buttons
+* Delete quotes
+* Search quotes by name, email, or service type
 
-= A question that someone might have =
+## Running tests
 
-An answer to that question.
+The plugin includes automated tests to verify functionality.
 
-= What about foo bar? =
+### Requirements
 
-Answer to foo bar dilemma.
+* PHP 7.4 or higher
+* PHPUnit installed
+* WordPress environment
 
-== Screenshots ==
+### Install PHPUnit
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+```bash
+# Mac with Homebrew
+brew install phpunit
 
-== Changelog ==
+# Or with Composer
+composer global require phpunit/phpunit
+```
 
-= 1.0 =
-* A change since the previous version.
-* Another change.
+### Run tests
 
-= 0.5 =
-* List versions from most recent at top to oldest at bottom.
+```bash
+cd wp-content/plugins/bonza-quote-form
+phpunit
+```
 
-== Upgrade Notice ==
+Expected output shows successful CRUD operations and validation tests.
 
-= 1.0 =
-Upgrade notices describe the reason a user should upgrade.  No more than 300 characters.
+## Technical assumptions
 
-= 0.5 =
-This version fixes a security related bug.  Upgrade immediately.
+* WordPress 5.0 or higher
+* MySQL database with CREATE TABLE permissions  
+* PHP with mysqli extension
+* Modern browser with JavaScript enabled for AJAX features
+* Admin users have 'manage_options' capability
 
-== Arbitrary section ==
+## Database
 
-You may provide arbitrary sections, in the same format as the ones above.  This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation."  Arbitrary sections will be shown below the built-in sections outlined above.
+Creates table `wp_bonza_quotes` with these fields:
+* id, name, email, service_type, notes, status, created_at, updated_at
 
-== A brief Markdown Example ==
+## Notes
 
-Ordered list:
+* Form submissions default to "pending" status
+* Test data uses "@test.com" emails and is automatically cleaned up
+* Plugin follows WordPress coding standards and security practices
+* All user input is sanitized and validated
+* AJAX submission includes nonce security tokens
+* Compatible with WordPress multisite installations
 
-1. Some feature
-1. Another feature
-1. Something else about the plugin
+## Support
 
-Unordered list:
+Check that required files exist in includes/ directory:
+* `class-bonza-quote-form-activator.php`
+* `class-bonza-quote-form-quote.php`
 
-* something
-* something else
-* third thing
-
-Here's a link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
-Titles are optional, naturally.
-
-[markdown syntax]: http://daringfireball.net/projects/markdown/syntax
-            "Markdown is what the parser uses to process much of the readme file"
-
-Markdown uses email style notation for blockquotes and I've been told:
-> Asterisks for *emphasis*. Double it up  for **strong**.
-
-`<?php code(); // goes in backticks ?>`
+If tests fail, verify WordPress is properly loaded and database permissions are correct.
